@@ -1,0 +1,26 @@
+{
+  "name": "ledgerline",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LedgerLine foundation for the Snovasys Fresher Hiring Challenge 2026",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test",
+    "db:migrate": "node scripts/migrate.js",
+    "bootstrap:admin": "node scripts/bootstrap-admin.js"
+  },
+  "engines": {
+    "node": ">=22 <23"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.7.4",
+    "jsonwebtoken": "^9.0.3",
+    "pg": "^8.16.3",
+    "zod": "^4.6.7"
+  }
+}
