@@ -11,6 +11,26 @@ LedgerLine is a modular Node.js 22, Express, PostgreSQL API with health checks, 
 5. Set BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD in the process environment, then run npm run bootstrap:admin once. Bootstrap refuses if any admin already exists.
 6. Start with npm start. Run tests with npm test. Integration tests use PostgreSQL and clean up generated test records.
 
+## Frontend
+
+The React/Vite client is an independent app under `frontend/`; it uses the existing Express APIs and does not add or change backend endpoints.
+
+1. In the project root, start the backend with `npm start` (default `http://localhost:3000`).
+2. In a second terminal, run `npm --prefix frontend install` once.
+3. Run `npm run dev --prefix frontend` and open the Vite URL printed in the terminal (normally `http://localhost:5173`). Vite proxies `/api` requests to the backend.
+4. For a production build run `npm run build --prefix frontend`; serve the generated `frontend/dist/` directory from a static host. Set `VITE_API_BASE_URL` at build time if the API is hosted on a different origin. The API host must permit the frontend origin when using a direct production API URL.
+5. To browser-check all role workflows, start both servers as above and run `npm run smoke:roles --prefix frontend` from the project root. It requires Chrome, PostgreSQL, and the development API, and exercises registration/login plus real synthetic deposit, withdrawal, and transfer endpoints. It deletes its fixture accounts and transactions; append-only audit events remain. Run only against a development database.
+
+The frontend uses `sessionStorage` for the bearer token, clears the session when an API call receives 401, and relies on backend authentication/role checks for authorization. Public sign-up creates only account holders. Admin and auditor credentials must already be provisioned through the backend's existing bootstrap/admin flows. Dashboard totals and tables are fetched from the API; no sample financial balances or simulated successful payments are included. API errors distinguish invalid input, expired sessions, forbidden access, missing resources, conflicts, rate limits, and server/network failures.
+
+Frontend role navigation:
+
+- ACCOUNT_HOLDER: overview, own accounts, deposit/withdraw/transfer, and own transaction history.
+- ADMIN: overview, all accounts with freeze/close controls, users with auditor provisioning, audit logs, and reconciliation.
+- AUDITOR: read-only overview, all accounts, account transaction history, audit logs, and reconciliation.
+
+Money forms convert rupee text to integer paise, enforce the backend's per-operation limit, and attach a fresh `Idempotency-Key` to each new request. Transfers accept the recipient's account UUID because the backend has no account-number lookup route.
+
 ## Authentication APIs
 
 POST /api/auth/register accepts JSON fullName, email, password. Public signups always become ACCOUNT_HOLDER; extra fields such as role are rejected.

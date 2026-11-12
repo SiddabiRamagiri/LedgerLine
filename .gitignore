@@ -4,4 +4,6 @@
 !.env.example
 npm-debug.log*
 coverage/
+frontend/node_modules/
+frontend/dist/
 .DS_Store
