@@ -1,7 +1,11 @@
 ﻿const fs = require('node:fs/promises');
 const path = require('node:path');
-const pool = require('../src/db/pool');
+const { Pool } = require('pg');
+const config = require('../src/config/env');
+let pool;
 async function migrate() {
+  const connectionString = config.assertMigrationConfig();
+  pool = new Pool({ connectionString, max: 1, connectionTimeoutMillis: config.dbConnectionTimeoutMs });
   await pool.query('CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW())');
   const directory = path.join(__dirname, '..', 'migrations');
   const files = (await fs.readdir(directory)).filter((name) => name.endsWith('.sql')).sort();
@@ -27,5 +31,5 @@ async function migrate() {
 migrate().catch((error) => {
   console.error('Migration failed', { code: error.code || 'unknown' });
   process.exitCode = 1;
-}).finally(() => pool.end());
+}).finally(() => pool?.end());
 

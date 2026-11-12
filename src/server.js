@@ -3,7 +3,9 @@ const app = createApp();
 const config = require('./config/env');
 const pool = require('./db/pool');
 
-const server = app.listen(config.port, () => {
+config.assertRuntimeConfig();
+
+const server = app.listen(config.port, '0.0.0.0', () => {
   console.log(`LedgerLine listening on port ${config.port}`);
 });
 

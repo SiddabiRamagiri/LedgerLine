@@ -27,3 +27,7 @@ Added migration 005 for transaction destination account references and destinati
 ## Audit trail and security hardening
 
 Added migrations 006 and 007 for append-only audit logs, request IDs, indexes, and stricter actor immutability. Successful/failed authentication, registration, account creation/status changes, successful deposits/withdrawals/transfers, and admin auditor creation are audited. Financial events are inserted in the operation's existing PostgreSQL transaction. Added ADMIN/AUDITOR read-only paginated audit API with action, user, and date filters, and a read-only ledger reconciliation report. DB trigger/ACL protection rejects normal UPDATE/DELETE; privileged owner/superuser bypass remains possible and separate runtime/owner credentials are deployment work. Added integration tests for access, safe audit metadata, immutability, rollback, and reconciliation detection.
+
+## Production deployment preparation
+
+Added Render Blueprint configuration, a Node 22 version pin, Express production static serving and SPA fallback, same-origin API behavior, production startup validation and `0.0.0.0` binding. Migration runner now uses a distinct direct Neon migration URL and role in production; runtime uses pooled `DATABASE_URL`. Added a least-privilege runtime grant script and documented Render environment setup, approved manual migration execution, and one-time admin bootstrap. Production migrations are deliberately not automatic. No live deployment is claimed until the real URL is tested.

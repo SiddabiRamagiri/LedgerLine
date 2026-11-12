@@ -47,3 +47,17 @@ Transfer integration tests include opposite-direction concurrent transfers, comp
 | Ledger mismatch goes unnoticed | Read-only reconciliation checks completed entry sides/totals, account ledger projections, transfer shape, and negative balances. | It detects and reports; staff must investigate and corrections need a separately controlled process. |
 
 Audit/reconciliation integration tests use PostgreSQL. The reconciliation discrepancy fixture changes a projection only inside a transaction with its integrity trigger disabled, then rolls back. Privileged database administrators can still modify audit history; use external append-only/WORM exports if stronger evidence retention is required.
+
+## Production deployment
+
+| Threat | Mitigation | Remaining consideration |
+| --- | --- | --- |
+| Migration owner credential stolen from web process | Render runtime receives only pooled `DATABASE_URL`; migration runner requires a distinct direct URL and database role. | Manual migration jobs still need tightly controlled secret injection and owner access. |
+| Runtime compromise alters schema or erases audit/ledger rows | `scripts/grant-runtime-privileges.sql` grants limited route DML, selected-column updates, no deletes, and no DDL; audit is read/insert only. | Database owner/superuser and inherited grants can bypass these controls; review effective Neon grants after schema changes. |
+| Production web process starts with weak/missing settings | Startup requires a >=32-byte JWT secret, PostgreSQL URL, Neon pooler host and TLS, and production DB TLS. | Secrets and Neon settings must be configured correctly in Render; this repo has no live service credentials. |
+| Client IP rate limit bypass/misread behind Render proxy | Production trusts exactly one Express proxy hop. | Reassess proxy topology if another proxy/CDN is added. |
+| SPA routes shadow API 404s or stale entry point is cached | SPA fallback excludes `/api`; HTML is revalidated while fingerprinted assets are immutable. | Check cache behavior after frontend asset strategy changes. |
+| Bootstrap admin variables persist after setup | Bootstrap is an explicit one-time command and refuses if an admin exists; docs require private short-lived env injection then removal. | Operator must remove secrets and restrict deployment logs/access. |
+| Migration unexpectedly mutates production | Render migration pre-deploy command stays disabled; production migration URL is not listed as a web-service secret. | No production migration or deployment has been run; approval, backup plan, and live URL verification remain operational blockers. |
+
+Never run the database-writing integration suite or role-dashboard smoke workflow against Neon production. Tests use fixtures and can create users, accounts, transactions, and permanent append-only audit rows.
